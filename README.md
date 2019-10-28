@@ -7,7 +7,7 @@ Frame.io is a cloud-based collaboration hub that allows video professionals to s
 
 # Use Custom Actions with Frame.io
 
-This is an example application which shows how to create a custom action for Frame.io. Frame.io custom actions allow you to build integrations directly into Frame.io as programmable UI components. This enables a whole class of workflows that can be triggered by users within the app, leveraging the same underlying events routing as Frame.io [webhooks](https://docs.frame.io/docs/webhooks). You can read more about custom actions in the [Custom Actions Overview](https://docs.frame.io/docs/uploading-assets) documentation.
+This is an example application which shows how to create a custom action for Frame.io. Frame.io custom actions allow you to build integrations directly into Frame.io as programmable UI components. This enables a whole class of workflows that can be triggered by users within the app, leveraging the same underlying events routing as Frame.io [webhooks](https://docs.frame.io/docs/webhooks). You can read more about custom actions in the [Custom Actions Overview](https://docs.frame.io/docs/custom-actions) documentation.
 
 Currently, custom actions are available for assets, and are displayed in the contextual / right-click dropdown menu available on any asset. An Asset is a robust representation of a file in S3, and its context in Frame.io, including transcodes, user/team/project context, and metadata. You can read about Assets in the [Uploading Assets](https://docs.frame.io/docs/uploading-assets) guide. In the Frame.io app, a custom action appears as shown in the image where *Test* is the name of the custom action: 
 
