@@ -1,5 +1,3 @@
-# Example application for Frame.io's custom action feature. 
-
 from flask import Flask, jsonify, request
 import json
 
