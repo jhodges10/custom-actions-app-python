@@ -1,4 +1,6 @@
 from flask import Flask, jsonify, request
+from lib.video_handler import render_and_upload_slate
+from multiprocessing import Pool, Process
 import json
 
 app = Flask(__name__)
@@ -17,34 +19,47 @@ def callback():
   data = json.loads(request.data)
 
   if "data" in data:
-    user_name = data['data']['name']
-    user_color = data['data']['color']
+    # Grab relevant data
+    timecode_burnin = data['data']['timecode']
+    client = data['data']['client']
+    project = data['data']['project']
+
+    # Pass it to the rendering function
+    p = Process(target=render_and_upload_slate, kwargs={"client": client, "project": project, "timecode_burnin": timecode_burnin})
+    p.start()
+    p.join()
+
     return jsonify({
-      'title': 'Success!',
-      'description': 'Hi there ' + user_name + '! Your favorite color is ' + user_color
+      'title': 'Submitted for rendering!',
+      'description': 'Your slate is being generated and added to your video'
     })
 
   return jsonify({
-    'title': 'Hello World!',
-    'description': 'Tell me about yourself!',
+    'title': 'Add a slate!',
+    'description': 'Fill out the following to add a slate to your video!',
     'fields': [
       {
         'type': 'text',
-        'name': 'name',
-        'label': 'Name'
+        'name': 'client',
+        'label': 'Client'
+      },
+      {
+        'type': 'text',
+        'name': 'project',
+        'label': 'Project'
       },
       {
         'type': 'select',
-        'name': 'color',
-        'label': 'Favorite Color',
+        'name': 'timecode',
+        'label': 'Timecode Burn-in',
         'options': [
           {
-            'name': 'Blue',
-            'value': 'blue',
+            'name': 'Yes',
+            'value': 'yes',
           },
           {
-            'name': 'Red',
-            'value': 'red',
+            'name': 'No',
+            'value': 'no',
           },
         ],
       },
