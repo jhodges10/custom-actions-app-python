@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from lib.video_handler import render_and_upload_slate
 from multiprocessing import Pool, Process
+from pprint import pprint
 import json
 
 app = Flask(__name__)
@@ -14,25 +15,32 @@ def hello_www():
 
 # Send a POST request to /actions to create a form in the Frame.io web app
 
-@app.route('/actions', methods=['POST'])
+@app.route('/new', methods=['POST'])
 def callback():
-  data = json.loads(request.data)
+  data = request.json
 
-  if "data" in data:
-    # Grab relevant data
-    timecode_burnin = data['data']['timecode']
-    client = data['data']['client']
-    project = data['data']['project']
+  if "data" in data.keys():
+    if data['data']['type'] == "slate.generate":
+      pprint(data)
+      # Grab relevant data
+      timecode_burnin = data['data']['timecode']
+      client = data['data']['client']
+      project = data['data']['project']
 
-    # Pass it to the rendering function
-    p = Process(target=render_and_upload_slate, kwargs={"client": client, "project": project, "timecode_burnin": timecode_burnin})
-    p.start()
-    p.join()
+      # Pass it to the rendering function
+      # p = Process(target=render_and_upload_slate, kwargs={"client": client, "project": project, "timecode_burnin": timecode_burnin})
+      # p.start()
+      # p.join()
 
-    return jsonify({
-      'title': 'Submitted for rendering!',
-      'description': 'Your slate is being generated and added to your video'
-    })
+      return jsonify({
+        'title': 'Submitted for rendering!',
+        'description': 'Your slate is being generated and added to your video'
+      })
+    else:
+      return jsonify({
+        'title': 'Bad request',
+        'description': 'You hit the endpoint with the wrong info'
+      })
 
   return jsonify({
     'title': 'Add a slate!',
@@ -67,4 +75,4 @@ def callback():
   })
 
 if __name__ =="__main__":
-    app.run(debug=True,port=8080)
+    app.run(host="0.0.0.0", debug=True,port=80)
