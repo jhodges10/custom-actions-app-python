@@ -1,3 +1,6 @@
 frameioclient
 Flask
 pprint
+python-dotenv
+fuzzywuzzy
+# python-Levenshtein

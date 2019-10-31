@@ -1,7 +1,7 @@
 import subprocess
 import shutil
 import os
-from frameio_handler import FIO
+from lib.frameio_handler import FIO
 
 def render_and_upload_slate(**kwargs):
     # Create temp directory
@@ -11,8 +11,7 @@ def render_and_upload_slate(**kwargs):
         os.mkdir("temp")
     
     # Download original frame.io video
-
-
+    
 
     # Upload new video to Frame.io
     final_video_path = ""
@@ -49,17 +48,17 @@ def merge_slate_with_video(slate_path, video_path):
     with open("/tmp/output.log", "a") as output:
         # Generate intermediate transport streams to prevent re-encoding of h.264
         subprocess.call(
-            f"""docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i {slate_path} -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate1.ts""",
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i {} -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate1.ts""".format(slate_path),
             shell=True, stdout=output, stderr=output
         )
         subprocess.call(
-            f"""docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i {video_path} -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate2.ts""",
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i {} -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate2.ts""".format(video_path),
             shell=True, stdout=output, stderr=output
         )
 
         # Merge together transport streams
         subprocess.call(
-            f"""docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i 'concat:intermediate1.ts|intermediate2.ts' -c copy -bsf:v  -bsf:a aac_adtstoasc slated_output.mp4""",
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i 'concat:intermediate1.ts|intermediate2.ts' -c copy -bsf:v  -bsf:a aac_adtstoasc slated_output.mp4""",
             shell=True, stdout=output, stderr=output
         )
 
