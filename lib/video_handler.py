@@ -48,7 +48,7 @@ def render_and_upload_slate(**kwargs):
         "height": asset_info['transcodes']['original_height']
     }
 
-    slate_path = generate_slate(client=kwargs['client'], fps=asset_info['fps'], duration=asset_info['duration'], project=kwargs['project'])
+    slate_path = generate_slate(client=kwargs['client'], fps=asset_info['fps'], duration=asset_info['duration'], project=kwargs['project'], resolution=resolution)
 
     # Merge new slate with video
     ul_filepath = merge_slate_with_video(slate_path, dl_path)
@@ -76,9 +76,9 @@ def generate_slate(**kwargs):
     x=1118: y=551, \
     drawtext=fontfile=lib/AvenirNext.ttc: \
     text={}:fontcolor=white:fontsize=62:box=0: \
-    x=1118: y=742'\ -vf scale=320:-1
+    x=1118: y=742'\ -vf scale={}:{}
     -an -pix_fmt yuv420p {}
-    """.format(kwargs['client'].upper(), kwargs['project'].upper(), kwargs['duration'], movie_path)
+    """.format(kwargs['client'].upper(), kwargs['project'].upper(), kwargs['duration'], kwargs['resolution']['width'], kwargs['resolution']['height'], movie_path)
 
     # add '-an' to end of FFMPEG script, before output specified in order to remove audio from slate.
 
