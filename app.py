@@ -56,9 +56,9 @@ def callback():
       })
 
       # Pass it to the rendering function so that we can return our response saying the job has started
-      # p = Process(target=render_and_upload_slate, kwargs={"client": client, "project": project, "timecode_burnin": timecode_burnin})
-      # p.start()
-      # p.join()
+      p = Process(target=render_and_upload_slate, kwargs={"client": client, "project": project, "timecode_burnin": timecode_burnin, "resource_id": resource_id, "interaction_id": interaction_id})
+      p.start()
+      p.join()
 
       return jsonify({
         'title': 'Submitted for rendering!',

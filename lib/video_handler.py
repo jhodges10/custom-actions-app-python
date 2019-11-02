@@ -1,17 +1,43 @@
 import subprocess
 import shutil
 import os
-from lib.frameio_handler import FIO
+import urllib
+from pprint import pprint
+from frameioclient import FrameioClient
+from dotenv import load_dotenv
+from pathlib import Path  # python3 only
 
 def render_and_upload_slate(**kwargs):
+    print(f"Resource ID: {kwargs['resource_id']}")
+    print(f"Timecode Burnin: {kwargs['timecode_burnin']}")
+    print(f"Project: {kwargs['project']}")
+    print(f"Client: {kwargs['client']}")
+
     # Create temp directory
     if os.path.isdir(os.path.join(os.path.curdir, "temp")):
         pass
     else:
         os.mkdir("temp")
-    
+
+    # Initialize FIO Class
+    try:
+        env_path = Path('') / '.env'
+        load_dotenv(dotenv_path=env_path, verbose=False)
+    except Exception as e:
+        print(e)
+        print("Failure to load .env file... Trying one directory up.")
+        env_path = Path('..') / '.env'
+        load_dotenv(dotenv_path=env_path, verbose=False)
+
+    token = os.environ.get("FRAMEIO_TOKEN")
+    client = FrameioClient(token)
+
+    asset_info = client.get_asset(kwargs['resource_id'])
+    # pprint(asset_info)
+    og_asset_url = asset_info['original']
+
     # Download original frame.io video
-    
+    urllib.request.urlretrieve(og_asset_url, os.path.join(os.path.curdir, 'temp', asset_info['name']))
 
     # Upload new video to Frame.io
     final_video_path = ""
