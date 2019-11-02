@@ -39,10 +39,14 @@ def render_and_upload_slate(**kwargs):
 
     # Download original frame.io video
     print("Downloading video...")
-    urllib.request.urlretrieve(og_asset_url, os.path.join(os.path.curdir, 'temp', asset_info['name']))
+    dl_path = os.path.join(os.path.curdir, 'temp', asset_info['name'])
+    urllib.request.urlretrieve(og_asset_url, dl_path)
     print("Video downloaded. Continuing...")
 
-    generate_slate(client=kwargs['client'], fps=asset_info['fps'], duration=asset_info['duration'], project=kwargs['project'])
+    slate_path = generate_slate(client=kwargs['client'], fps=asset_info['fps'], duration=asset_info['duration'], project=kwargs['project'])
+
+    # Merge new slate with video
+    ul_filepath = merge_slate_with_video(slate_path, dl_path)
 
     # Upload new video to Frame.io
     final_video_path = ""
@@ -56,7 +60,7 @@ def render_and_upload_slate(**kwargs):
 def generate_slate(**kwargs):
     print("Generating slate...")
     # Crate slate w/ FFMPEG
-    movie_path = f"new_slate_{randint(1,100)}.mp4"
+    movie_path = f"temp/new_slate_{randint(1,100)}.mp4"
 
     ffmpeg_string = """-i lib/Slate_v01_blank.mp4 -vf \
     'drawtext=fontfile=lib/AvenirNext.ttc: \
@@ -71,35 +75,42 @@ def generate_slate(**kwargs):
     -an {}
     """.format(kwargs['client'].upper(), kwargs['project'].upper(), kwargs['duration'], movie_path)
 
+    # add -an to end of FFMPEG script, before output specified in order to remove audio from slate.
+
     with open("output.log", "a") as output:
         subprocess.call(
             """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -stats {}""".format(ffmpeg_string),
             shell=True, stdout=output, stderr=output
         )
 
-    print("Slate generation completed")
-    return
+    print("Slate generation completed. Continuing...")
+    return movie_path
 
 def upload_to_frameio(final_video_path):
     pass
 
 def merge_slate_with_video(slate_path, video_path):
     # Process w/ FFMPEG
-    with open("/tmp/output.log", "a") as output:
+    with open("output.log", "a") as output:
         # Generate intermediate transport streams to prevent re-encoding of h.264
+        print("Generating intermediate1.ts")
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i {} -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate1.ts""".format(slate_path),
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate1.ts""".format(slate_path),
             shell=True, stdout=output, stderr=output
         )
+        print("Done Generating intermediate1.ts")
+        print("Creating intermediate2.ts")
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i {} -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate2.ts""".format(video_path),
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate2.ts""".format(video_path),
             shell=True, stdout=output, stderr=output
         )
-
+        print("Done Generating intermediate2.ts")
+        print("Beginning merge...")
         # Merge together transport streams
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i 'concat:intermediate1.ts|intermediate2.ts' -c copy -bsf:v  -bsf:a aac_adtstoasc slated_output.mp4""",
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i 'concat:intermediate2.ts|intermediate2.ts' -c copy -bsf:v slated_output.mp4""",
             shell=True, stdout=output, stderr=output
         )
+        print("Merge completed... Ready to upload!")
 
     return "slated_output.mp4"

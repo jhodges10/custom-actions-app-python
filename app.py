@@ -38,7 +38,7 @@ def callback():
 
   if "data" in data.keys():
     if data['type'] == "slate.generate":
-      pprint(data)
+      # pprint(data)
       # Grab relevant data
       try:
         timecode_burnin = data['data']['timecode']
@@ -47,13 +47,13 @@ def callback():
       client = data['data']['client']
       project = data['data']['project']
 
-      pprint({
-        "client": client,
-        "project": project,
-        "timecode_burnin": timecode_burnin,
-        "interaction_id": interaction_id,
-        "resource_id": resource_id
-      })
+      # pprint({
+      #   "client": client,
+      #   "project": project,
+      #   "timecode_burnin": timecode_burnin,
+      #   "interaction_id": interaction_id,
+      #   "resource_id": resource_id
+      # })
 
       # Pass it to the rendering function so that we can return our response saying the job has started
       p = Process(target=render_and_upload_slate, kwargs={"client": client, "project": project, "timecode_burnin": timecode_burnin, "resource_id": resource_id, "interaction_id": interaction_id})
