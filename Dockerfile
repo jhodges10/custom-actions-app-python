@@ -9,4 +9,4 @@ RUN pip install -r /requirements.txt
 
 FROM pip
 COPY . .
-CMD python app.py
+CMD gunicorn --workers=1 app:app --bind 0.0.0.0:8000
