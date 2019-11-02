@@ -43,6 +43,11 @@ def render_and_upload_slate(**kwargs):
     urllib.request.urlretrieve(og_asset_url, dl_path)
     print("Video downloaded. Continuing...")
 
+    resolution = {
+        "width": asset_info['transcodes']['original_width'],
+        "height": asset_info['transcodes']['original_height']
+    }
+
     slate_path = generate_slate(client=kwargs['client'], fps=asset_info['fps'], duration=asset_info['duration'], project=kwargs['project'])
 
     # Merge new slate with video
@@ -71,11 +76,11 @@ def generate_slate(**kwargs):
     x=1118: y=551, \
     drawtext=fontfile=lib/AvenirNext.ttc: \
     text={}:fontcolor=white:fontsize=62:box=0: \
-    x=1118: y=742'\
-    -an {}
+    x=1118: y=742'\ -vf scale=320:-1
+    -an -pix_fmt yuv420p {}
     """.format(kwargs['client'].upper(), kwargs['project'].upper(), kwargs['duration'], movie_path)
 
-    # add -an to end of FFMPEG script, before output specified in order to remove audio from slate.
+    # add '-an' to end of FFMPEG script, before output specified in order to remove audio from slate.
 
     with open("output.log", "a") as output:
         subprocess.call(
@@ -95,22 +100,22 @@ def merge_slate_with_video(slate_path, video_path):
         # Generate intermediate transport streams to prevent re-encoding of h.264
         print("Generating intermediate1.ts")
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate1.ts""".format(slate_path),
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts ./temp/intermediate1.ts""".format(slate_path),
             shell=True, stdout=output, stderr=output
         )
         print("Done Generating intermediate1.ts")
         print("Creating intermediate2.ts")
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts intermediate2.ts""".format(video_path),
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts ./temp/intermediate2.ts""".format(video_path),
             shell=True, stdout=output, stderr=output
         )
         print("Done Generating intermediate2.ts")
         print("Beginning merge...")
         # Merge together transport streams
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i 'concat:intermediate2.ts|intermediate2.ts' -c copy -bsf:v slated_output.mp4""",
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i 'concat:intermediate1.ts|intermediate2.ts' -c copy .temp/slated_output.mp4""",
             shell=True, stdout=output, stderr=output
         )
         print("Merge completed... Ready to upload!")
 
-    return "slated_output.mp4"
+    return "./temp/slated_output.mp4"
