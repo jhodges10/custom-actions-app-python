@@ -1,0 +1,28 @@
+version: "3.7"
+services:
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis:/data
+
+  # api:
+  #   container_name: api
+  #   build:
+  #     context: ./
+  #     dockerfile: Dockerfile
+  #   command: gunicorn --workers=1 app:app --bind 0.0.0.0:8000
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - redis
