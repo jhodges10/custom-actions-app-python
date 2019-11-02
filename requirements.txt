@@ -1,6 +1,9 @@
-frameioclient
 Flask
+requests
+frameioclient
 pprint
 python-dotenv
 fuzzywuzzy
 # python-Levenshtein
+gunicorn
+redis
