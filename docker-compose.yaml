@@ -1,12 +1,12 @@
 version: "3.7"
 services:
 
-  nginx:
-    image: nginx:latest
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - 80:80
+  # nginx:
+  #   image: nginx:latest
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #   ports:
+  #     - 80:80
 
   redis:
     container_name: redis
