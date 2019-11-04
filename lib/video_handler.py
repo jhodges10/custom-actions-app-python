@@ -67,7 +67,7 @@ def generate_slate(**kwargs):
     # Crate slate w/ FFMPEG
     movie_path = f"temp/new_slate_{randint(1,100)}.mp4"
 
-    ffmpeg_string = """-i lib/Slate_v01_blank.mp4 -vf \
+    ffmpeg_string = """-y -r {} -i lib/Slate_v01_blank.mp4 -vf \
     'drawtext=fontfile=lib/AvenirNext.ttc: \
     text={}:fontcolor=white:fontsize=62:box=0: \
     x=1118:y=351, \
@@ -76,9 +76,11 @@ def generate_slate(**kwargs):
     x=1118: y=551, \
     drawtext=fontfile=lib/AvenirNext.ttc: \
     text={}:fontcolor=white:fontsize=62:box=0: \
-    x=1118: y=742'\ -vf scale={}:{}
-    -an -pix_fmt yuv420p {}
-    """.format(kwargs['client'].upper(), kwargs['project'].upper(), kwargs['duration'], kwargs['resolution']['width'], kwargs['resolution']['height'], movie_path)
+    x=1118: y=742', scale={}:{} \
+    -pix_fmt yuv420p {}
+    """.format(kwargs['fps'], kwargs['client'].upper(), kwargs['project'].upper(), kwargs['duration'], kwargs['resolution']['width'], kwargs['resolution']['height'], movie_path)
+
+    # x=1118: y=742' -vf scale={}:{} \ -- backup line in case getting rid of the additional call  for -vf doesn't work
 
     # add '-an' to end of FFMPEG script, before output specified in order to remove audio from slate.
 
@@ -113,7 +115,7 @@ def merge_slate_with_video(slate_path, video_path):
         print("Beginning merge...")
         # Merge together transport streams
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i 'concat:intermediate1.ts|intermediate2.ts' -c copy .temp/slated_output.mp4""",
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -i 'concat:./temp/intermediate1.ts|./temp/intermediate2.ts'  -c copy -bsf:a aac_adtstoasc ./temp/slated_output.mp4""",
             shell=True, stdout=output, stderr=output
         )
         print("Merge completed... Ready to upload!")
