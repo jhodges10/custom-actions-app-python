@@ -152,9 +152,10 @@ def upload_to_frameio(final_video_path, asset_info, client):
         filesize=filesize
     )
     with open(ul_path, "rb") as file:
+        print("Starting upload...")
         client.upload(asset, file)
 
-    return True
+    print("Upload completed!")
 
 if __name__ == "__main__":
     # Initialize FIO Class
