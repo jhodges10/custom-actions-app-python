@@ -1,12 +1,15 @@
 version: "3.7"
 services:
 
-  # nginx:
-  #   image: nginx:latest
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf
-  #   ports:
-  #     - 80:80
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    depends_on:
+      - api
 
   redis:
     container_name: redis
@@ -16,13 +19,18 @@ services:
     volumes:
       - ./redis:/data
 
-  # api:
-  #   container_name: api
-  #   build:
-  #     context: ./
-  #     dockerfile: Dockerfile
-  #   command: gunicorn --workers=1 app:app --bind 0.0.0.0:8000
-  #   ports:
-  #     - "8000:8000"
-  #   depends_on:
-  #     - redis
+  api:
+    container_name: api
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: flask run --host=0.0.0.0
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=/code/app.py
+      - REDIS_HOSTNAME=redis
+    ports:
+      - 5000
+    depends_on:
+      - redis

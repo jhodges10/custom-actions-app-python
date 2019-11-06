@@ -4,9 +4,8 @@ FROM base as builder
 RUN apt-get update
 
 FROM builder as pip
-COPY requirements.txt /requirements.txt
-RUN pip install -r /requirements.txt
+COPY requirements.txt code/requirements.txt
+RUN pip install -r code/requirements.txt
 
 FROM pip
-COPY . .
-CMD gunicorn --workers=1 app:app --bind 0.0.0.0:8000
+COPY . code/
