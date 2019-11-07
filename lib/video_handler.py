@@ -1,9 +1,11 @@
 import subprocess
 import shutil
 import os
+import math
 import urllib
 from random import randint
 from pprint import pprint
+from timecode import Timecode
 from frameioclient import FrameioClient
 from dotenv import load_dotenv
 from pathlib import Path  # python3 only
@@ -61,23 +63,24 @@ def generate_slate(**kwargs):
     print("Generating slate...")
     # Crate slate w/ FFMPEG
     movie_path = f"temp/new_slate_{randint(1,100)}.mp4"
+    tc = Timecode(kwargs['fps'], f"00:00:{kwargs['duration']}")
 
     slate_string = """-y -i lib/8s_blank_slate.mp4 -vf \
         'drawtext=fontfile=lib/AvenirNext.ttc: \
-        text={}:fontcolor=white:fontsize=62:box=0: \
-        x=1118:y=351, \
+        text={}: fontcolor=white: fontsize=62: box=0: \
+        x=1114:y=351, \
         drawtext=fontfile=lib/AvenirNext.ttc: \
-        text={}:fontcolor=white:fontsize=62:box=0: \
-        x=1118: y=551, \
+        text={}: fontcolor=white: fontsize=62: box=0: \
+        x=1114: y=551, \
         drawtext=fontfile=lib/AvenirNext.ttc: \
-        text={}:fontcolor=white:fontsize=62:box=0: \
-        x=1118: y=742, scale={}:{}, fps=fps={}' \
+        text={}: fontcolor=white: fontsize=62: box=0: \
+        x=1114: y=742, scale={}:{}, fps=fps={}' \
         -pix_fmt yuv420p {} \
-        """.format(kwargs['client'].upper(), kwargs['project'].upper(), kwargs['duration'], kwargs['resolution']['width'], kwargs['resolution']['height'], kwargs['fps'], movie_path)
+        """.format(kwargs['client'].upper(), kwargs['project'].upper(), str(tc).replace(":", "\\\\\\\\\\\\:"), kwargs['resolution']['width'], kwargs['resolution']['height'], kwargs['fps'], movie_path)
     # x=1118: y=742' -vf scale={}:{} \ -- backup line in case getting rid of the additional call  for -vf doesn't work
     # add '-an' to end of FFMPEG script, before output specified in order to remove audio from slate.
 
-    black_slate_string = """-y -i lib/2s_black.mp4 -vf 'scale={}:{}, fps=fps={}' -pix_fmt yuv420p -an temp/temp_black.mp4 \
+    black_slate_string = """-y -i lib/2s_black.mp4 -vf 'scale={}:{}, fps=fps={}' -pix_fmt yuv420p temp/temp_black.mp4 \
         """.format(kwargs['resolution']['width'], kwargs['resolution']['height'], kwargs['fps'])
 
 
@@ -122,9 +125,7 @@ def merge_slate_with_video(slate_path, video_path):
         # TODO Fix 2s black slate and it'll work!
         # Merge together transport streams
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i ./temp/intermediate1.ts -i ./temp/intermediate2.ts -i ./temp/intermediate3.ts \
-            -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0][2:v:0][2:a:0]concat=n=3:v=1:a=1[outv][outa]" \
-            -map "[outv]" -map "[outa]" ./temp/slated_output.mp4""",
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i 'concat:./temp/intermediate1.ts|./temp/intermediate2.ts|./temp/intermediate3.ts'  -c copy -bsf:a aac_adtstoasc ./temp/slated_output.mp4""",
             shell=True, stdout=output, stderr=output
         )
         print("Merge completed... Ready to upload!")
