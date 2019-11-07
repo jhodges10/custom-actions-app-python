@@ -9,11 +9,6 @@ from dotenv import load_dotenv
 from pathlib import Path  # python3 only
 
 def render_and_upload_slate(**kwargs):
-    # print(f"Resource ID: {kwargs['resource_id']}")
-    # print(f"Timecode Burnin: {kwargs['timecode_burnin']}")
-    # print(f"Project: {kwargs['project']}")
-    # print(f"Client: {kwargs['client']}")
-
     # Create temp directory
     if os.path.isdir(os.path.join(os.path.curdir, "temp")):
         pass
@@ -29,11 +24,12 @@ def render_and_upload_slate(**kwargs):
         print("Failure to load .env file... Trying one directory up.")
         env_path = Path('..') / '.env'
         load_dotenv(dotenv_path=env_path, verbose=False)
-
     token = os.environ.get("FRAMEIO_TOKEN")
     client = FrameioClient(token)
 
+    # Get asset info
     asset_info = client.get_asset(kwargs['resource_id'])
+    # TODO add handling of version stacks here (really just get the asset id of the latest version and replace asset_info with that)
     # pprint(asset_info)
     og_asset_url = asset_info['original']
 
@@ -76,7 +72,7 @@ def generate_slate(**kwargs):
         drawtext=fontfile=lib/AvenirNext.ttc: \
         text={}:fontcolor=white:fontsize=62:box=0: \
         x=1118: y=742, scale={}:{}, fps=fps={}' \
-        -pix_fmt yuv420p -an {} \
+        -pix_fmt yuv420p {} \
         """.format(kwargs['client'].upper(), kwargs['project'].upper(), kwargs['duration'], kwargs['resolution']['width'], kwargs['resolution']['height'], kwargs['fps'], movie_path)
     # x=1118: y=742' -vf scale={}:{} \ -- backup line in case getting rid of the additional call  for -vf doesn't work
     # add '-an' to end of FFMPEG script, before output specified in order to remove audio from slate.
@@ -123,14 +119,17 @@ def merge_slate_with_video(slate_path, video_path):
         )
         print("Done Generating intermediate3.ts")
         print("Beginning merge...")
+        # TODO Fix 2s black slate and it'll work!
         # Merge together transport streams
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i 'concat:./temp/intermediate1.ts|./temp/intermediate2.ts|./temp/intermediate3.ts'  -c copy -bsf:a aac_adtstoasc ./temp/slated_output.mp4""",
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i ./temp/intermediate1.ts -i ./temp/intermediate2.ts -i ./temp/intermediate3.ts \
+            -filter_complex "[0:v:0][0:a:0][1:v:0][1:a:0][2:v:0][2:a:0]concat=n=3:v=1:a=1[outv][outa]" \
+            -map "[outv]" -map "[outa]" ./temp/slated_output.mp4""",
             shell=True, stdout=output, stderr=output
         )
         print("Merge completed... Ready to upload!")
 
-    return "./temp/slated_output.mp4"
+    return "temp/slated_output.mp4"
 
 def upload_to_frameio(final_video_path, asset_info, client):
     # Rename file to original file name
