@@ -102,6 +102,7 @@ def generate_slate(**kwargs):
 def merge_slate_with_video(slate_path, video_path):
     # Process w/ FFMPEG
     with open("output.log", "a") as output:
+        
         # Generate intermediate transport streams to prevent re-encoding of h.264
         print("Generating intermediate1.ts")
         subprocess.call(
@@ -122,7 +123,7 @@ def merge_slate_with_video(slate_path, video_path):
         )
         print("Done Generating intermediate3.ts")
         print("Beginning merge...")
-        # TODO Fix 2s black slate and it'll work!
+
         # Merge together transport streams
         subprocess.call(
             """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i 'concat:./temp/intermediate1.ts|./temp/intermediate2.ts|./temp/intermediate3.ts'  -c copy -bsf:a aac_adtstoasc ./temp/slated_output.mp4""",
