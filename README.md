@@ -3,14 +3,15 @@
 # Frame.io Setup
 
 1. Create a new Custom Action via the developer portal
-2. Setup a new subdomain to use for your custom action receiver (slate.jeffhq.com for example)
+2. Setup a new subdomain to use for your custom action receiver (slate.frame.io for example)
+3. Point the Custom Action at your subdomain and endpoint (https://slate.frame.io/slate_endpoint)
 
 # Setup
 
 1. Setup an Ubuntu instance on AWS
-2. Expose port 80 via the Security Groups settings for this instance
+2. Expose port 80/443 via the Security Groups settings for this instance
 3. Install docker and docker-compose
-4. Git clone this repository
+4. `git clone` this repository
 5. Run `docker-compose build` followed by `docker-compose up` from within the cloned directory to start the infrastructure and API endpoint
 
 # TODO
