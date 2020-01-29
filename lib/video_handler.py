@@ -27,6 +27,7 @@ def render_and_upload_slate(**kwargs):
         print("Failure to load .env file... Trying one directory up.")
         env_path = Path('..') / '.env'
         load_dotenv(dotenv_path=env_path, verbose=False)
+
     token = os.environ.get("FRAMEIO_TOKEN")
     client = FrameioClient(token)
 
@@ -111,19 +112,21 @@ def merge_slate_with_video(slate_path, video_path):
         # Generate intermediate transport streams to prevent re-encoding of h.264
         print("Generating intermediate1.ts")
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts ./temp/intermediate1.ts""".format(slate_path),
+            """ffmpeg -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts ./temp/intermediate1.ts""".format(
+                slate_path),
             shell=True, stdout=output, stderr=output
         )
         print("Done Generating intermediate1.ts")
         print("Creating intermediate2.ts")
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i ./temp/temp_black.mp4 -c copy -bsf:v h264_mp4toannexb -f mpegts ./temp/intermediate2.ts""",
+            """ffmpeg -y -i ./temp/temp_black.mp4 -c copy -bsf:v h264_mp4toannexb -f mpegts ./temp/intermediate2.ts""",
             shell=True, stdout=output, stderr=output
         )
         print("Done Generating intermediate2.ts")
         print("Creating intermediate3.ts")
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts ./temp/intermediate3.ts""".format(video_path),
+            """ffmpeg -y -i '{}' -c copy -bsf:v h264_mp4toannexb -f mpegts ./temp/intermediate3.ts""".format(
+                video_path),
             shell=True, stdout=output, stderr=output
         )
         print("Done Generating intermediate3.ts")
@@ -131,7 +134,7 @@ def merge_slate_with_video(slate_path, video_path):
 
         # Merge together transport streams
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -y -i 'concat:./temp/intermediate1.ts|./temp/intermediate2.ts|./temp/intermediate3.ts'  -c copy -bsf:a aac_adtstoasc ./temp/slated_output.mp4""",
+            """ffmpeg -y -i 'concat:./temp/intermediate1.ts|./temp/intermediate2.ts|./temp/intermediate3.ts'  -c copy -bsf:a aac_adtstoasc ./temp/slated_output.mp4""",
             shell=True, stdout=output, stderr=output
         )
         print("Merge completed... Ready to upload!")

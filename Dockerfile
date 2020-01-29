@@ -1,6 +1,11 @@
-FROM python:3.8.0-alpine as base
+FROM python:3 as base
 
-FROM base as pip
+FROM base as ffmpegi
+
+RUN apt-get update && apt-get install -y ffmpeg
+
+FROM ffmpegi as pip
+
 COPY requirements.txt code/requirements.txt
 RUN pip install -r code/requirements.txt
 
