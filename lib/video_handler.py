@@ -10,6 +10,7 @@ from frameioclient import FrameioClient
 from dotenv import load_dotenv
 from pathlib import Path  # python3 only
 
+
 def render_and_upload_slate(**kwargs):
     # Create temp directory
     if os.path.isdir(os.path.join(os.path.curdir, "temp")):
@@ -46,18 +47,20 @@ def render_and_upload_slate(**kwargs):
         "height": asset_info['transcodes']['original_height']
     }
 
-    slate_path = generate_slate(client=kwargs['client'], fps=asset_info['fps'], duration=asset_info['duration'], project=kwargs['project'], resolution=resolution)
+    slate_path = generate_slate(client=kwargs['client'], fps=asset_info['fps'],
+                                duration=asset_info['duration'], project=kwargs['project'], resolution=resolution)
 
     # Merge new slate with video
     ul_filepath = merge_slate_with_video(slate_path, dl_path)
 
     # Upload new video to Frame.io
     upload_to_frameio(ul_filepath, asset_info, client)
-    
+
     # Clean-up temp folder
     # shutil.rmtree("temp")
 
     return True
+
 
 def generate_slate(**kwargs):
     print("Generating slate...")
@@ -83,26 +86,28 @@ def generate_slate(**kwargs):
     black_slate_string = """-y -i lib/2s_black.mp4 -vf 'scale={}:{}, fps=fps={}' -pix_fmt yuv420p temp/temp_black.mp4 \
         """.format(kwargs['resolution']['width'], kwargs['resolution']['height'], kwargs['fps'])
 
-
     with open("output.log", "a") as output:
         # Generate actual slate
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -stats {}""".format(slate_string),
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -stats {}""".format(
+                slate_string),
             shell=True, stdout=output, stderr=output
         )
         # Generate 2s of black
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -stats {}""".format(black_slate_string),
+            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -stats {}""".format(
+                black_slate_string),
             shell=True, stdout=output, stderr=output
         )
 
     print("Slate generation completed. Continuing...")
     return movie_path
 
+
 def merge_slate_with_video(slate_path, video_path):
     # Process w/ FFMPEG
     with open("output.log", "a") as output:
-        
+
         # Generate intermediate transport streams to prevent re-encoding of h.264
         print("Generating intermediate1.ts")
         subprocess.call(
@@ -133,9 +138,11 @@ def merge_slate_with_video(slate_path, video_path):
 
     return "temp/slated_output.mp4"
 
+
 def upload_to_frameio(final_video_path, asset_info, client):
     # Rename file to original file name
-    new_name = asset_info['name'].split('.')[0] + '_s' + '.' + asset_info['name'].split('.')[1]
+    new_name = asset_info['name'].split(
+        '.')[0] + '_s' + '.' + asset_info['name'].split('.')[1]
     ul_path = os.path.join(os.curdir, 'temp', new_name)
     os.rename(os.path.join(os.curdir, final_video_path), ul_path)
 
@@ -157,6 +164,7 @@ def upload_to_frameio(final_video_path, asset_info, client):
         client.upload(asset, file)
 
     print("Upload completed!")
+
 
 if __name__ == "__main__":
     # Initialize FIO Class
