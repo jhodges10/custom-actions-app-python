@@ -4,7 +4,6 @@ frameioclient
 pprint
 python-dotenv
 fuzzywuzzy
-# python-Levenshtein
 gunicorn
 redis
 timecode

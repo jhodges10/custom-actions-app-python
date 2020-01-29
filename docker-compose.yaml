@@ -1,15 +1,15 @@
 version: "3.7"
 services:
 
-  nginx:
-    container_name: nginx
-    image: nginx:latest
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-    ports:
-      - 80:80
-    depends_on:
-      - api
+  # nginx:
+  #   container_name: nginx
+  #   image: nginx:latest
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #   ports:
+  #     - 80:80
+  #   depends_on:
+  #     - api
 
   redis:
     container_name: redis
@@ -22,15 +22,16 @@ services:
   api:
     container_name: api
     build:
-      context: ./
+      context: .
       dockerfile: Dockerfile
-    command: flask run --host=0.0.0.0
     env_file:
       - .env
     environment:
-      - FLASK_APP=/code/app.py
       - REDIS_HOSTNAME=redis
+    volumes:
+      - .:/code
     ports:
-      - 5000
+      - "8000:8000"
     depends_on:
       - redis
+  
