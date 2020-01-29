@@ -104,3 +104,4 @@ venv.bak/
 
 dump.rdb
 temp/*
+.DS_Store
