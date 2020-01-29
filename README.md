@@ -18,6 +18,7 @@
 
 1. Add support for version stacks
 2. Update slate to add space for more fields (FPS, resolution, etc.)
+3. Fix slate so that it counts down correctly!!!
 
 ### How to render programmatically with After effects
 https://www.themarketingtechnologist.co/creating-dynamic-videos-using-javascript-and-after-effects-the-basics/
