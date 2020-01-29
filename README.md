@@ -9,7 +9,7 @@
 # Setup
 
 1. Setup an Ubuntu instance on AWS
-2. Expose port 80/443 via the Security Groups settings for this instance
+2. Expose port 8000 via the Security Groups settings for this instance
 3. Install docker and docker-compose
 4. `git clone` this repository
 5. Run `docker-compose build` followed by `docker-compose up` from within the cloned directory to start the infrastructure and API endpoint
@@ -17,8 +17,7 @@
 # TODO
 
 1. Add support for version stacks
-2. Remove timecode dropdown (or implement it)
-3. Update slate to add space for more fields (FPS, resolution, etc.)
+2. Update slate to add space for more fields (FPS, resolution, etc.)
 
 ### How to render programmatically with After effects
 https://www.themarketingtechnologist.co/creating-dynamic-videos-using-javascript-and-after-effects-the-basics/

@@ -183,4 +183,4 @@ if __name__ == "__main__":
     asset_info = client.get_asset('a1a27d9b-181a-4005-b176-27d74cef8150')
     pprint(asset_info)
 
-    upload_to_frameio("temp/slated_output.mp4", asset_info)
+    upload_to_frameio("temp/slated_output.mp4", asset_info, client)
