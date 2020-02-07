@@ -87,21 +87,6 @@ def callback():
         'name': 'project',
         'label': 'Project'
       },
-      {
-        'type': 'select',
-        'name': 'timecode',
-        'label': 'Timecode Burn-in',
-        'options': [
-          {
-            'name': 'Yes',
-            'value': 'yes',
-          },
-          {
-            'name': 'No',
-            'value': 'no',
-          },
-        ],
-      },
     ]
   })
 
