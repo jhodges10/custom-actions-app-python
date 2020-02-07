@@ -90,13 +90,13 @@ def generate_slate(**kwargs):
     with open("output.log", "a") as output:
         # Generate actual slate
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -stats {}""".format(
+            """ffmpeg {}""".format(
                 slate_string),
             shell=True, stdout=output, stderr=output
         )
         # Generate 2s of black
         subprocess.call(
-            """docker run -v $(pwd):$(pwd) -w $(pwd) jrottenberg/ffmpeg:3.2-scratch -stats {}""".format(
+            """ffmpeg {}""".format(
                 black_slate_string),
             shell=True, stdout=output, stderr=output
         )
