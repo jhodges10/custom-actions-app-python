@@ -13,7 +13,7 @@ from pathlib import Path  # python3 only
 
 
 def render_and_upload_slate(**kwargs):
-    print("Slate processing beginning...")
+    print("Slate processing has begun...")
     
     # Create temp directory
     if os.path.isdir(os.path.join(os.path.curdir, "temp")):
