@@ -3,6 +3,7 @@ import shutil
 import os
 import math
 import urllib
+from requests.exceptions import HTTPError
 from random import randint
 from pprint import pprint
 from timecode import Timecode
