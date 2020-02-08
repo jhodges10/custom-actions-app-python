@@ -73,7 +73,7 @@ def render_and_upload_slate(**kwargs):
     upload_to_frameio(ul_filepath, asset_info, client)
 
     # Clean-up temp folder
-    # shutil.rmtree("temp")
+    shutil.rmtree("temp")
 
     return True
 
