@@ -12,24 +12,38 @@ from pathlib import Path  # python3 only
 
 
 def render_and_upload_slate(**kwargs):
+    print("Slate processing beginning...")
+    
     # Create temp directory
     if os.path.isdir(os.path.join(os.path.curdir, "temp")):
         pass
     else:
         os.mkdir("temp")
 
-    # Initialize FIO Class
-    try:
-        env_path = Path('') / '.env'
-        load_dotenv(dotenv_path=env_path, verbose=False)
-    except Exception as e:
-        print(e)
-        print("Failure to load .env file... Trying one directory up.")
-        env_path = Path('..') / '.env'
-        load_dotenv(dotenv_path=env_path, verbose=False)
-
+    # First try to grab ENV from system state
     token = os.environ.get("FRAMEIO_TOKEN")
-    client = FrameioClient(token)
+
+    if token == None:
+        try:
+            print("Failure to load .env file... Trying one directory up.")
+            cur_dir = Path.cwd()
+            env_path = cur_dir.parents[0] / '.env'
+            print(env_path)
+            load_dotenv(dotenv_path=env_path, verbose=False)
+            token = os.environ.get("FRAMEIO_TOKEN")
+            if token == None:
+                raise HTTPError
+        except HTTPError as e:
+            print(e)
+            print("Failure to load .env file... Trying one directory up.")
+            cur_dir = Path.cwd()
+            env_path = cur_dir.parents[1] / '.env'
+            load_dotenv(dotenv_path=env_path, verbose=False)
+            token = os.environ.get("FRAMEIO_TOKEN")
+        finally:
+            client = FrameioClient(token)
+    else:
+        client = FrameioClient(token)
 
     # Get asset info
     asset_info = client.get_asset(kwargs['resource_id'])
