@@ -102,7 +102,7 @@ def generate_slate(**kwargs):
     black_slate_string = """-y -i lib/2s_black.mp4 -vf 'scale={}:{}, fps=fps={}' -pix_fmt yuv420p temp/temp_black.mp4 \
         """.format(kwargs['resolution']['width'], kwargs['resolution']['height'], kwargs['fps'])
 
-    with open("output.log", "a") as output:
+    with open("FFMPEG_log.log", "a") as output:
         # Generate actual slate
         subprocess.call(
             """ffmpeg {}""".format(
@@ -122,7 +122,7 @@ def generate_slate(**kwargs):
 
 def merge_slate_with_video(slate_path, video_path):
     # Process w/ FFMPEG
-    with open("output.log", "a") as output:
+    with open("FFMPEG_log.log", "a") as output:
 
         # Generate intermediate transport streams to prevent re-encoding of h.264
         print("Generating intermediate1.ts")
@@ -179,9 +179,15 @@ def upload_to_frameio(final_video_path, asset_info, client):
     )
     with open(ul_path, "rb") as file:
         print("Starting upload...")
-        client.upload(asset, file)
-
+        try:
+            client.upload(asset, file)
+        except HTTPError:
+            print(HTTPError)
+            print("Failed uploading")
+            return False
     print("Upload completed!")
+    
+    return True
 
 
 if __name__ == "__main__":
