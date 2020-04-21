@@ -78,7 +78,7 @@ def callback():
       {
         'type': 'text',
         'name': 'project',
-        'label': 'Project'
+        'label': 'Project',
         'value': 'Placeholder Project'
       },
     ]
