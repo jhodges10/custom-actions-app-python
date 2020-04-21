@@ -72,12 +72,14 @@ def callback():
       {
         'type': 'text',
         'name': 'client',
-        'label': 'Client'
+        'label': 'Client',
+        'value': 'Placeholder Client'
       },
       {
         'type': 'text',
         'name': 'project',
         'label': 'Project'
+        'value': 'Placeholder Project'
       },
     ]
   })
